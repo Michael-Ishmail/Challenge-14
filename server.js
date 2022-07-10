@@ -1,0 +1,42 @@
+const path = require('path')
+const express = require('express')
+const routes = require('./controllers')
+const sequelize = require('./config/connections')
+const helpers = require('./utils/helpers')
+const exphbs = require('express-handlebars')
+
+const session = require('express-session')
+const { allowedNodeEnvironmentFlags } = require('process')
+const sequelizeStore = require('connect-session-sequelize')(session.Store)
+
+const sess = {
+    secret: process.env.DB_SECRET,
+    cookie: {},
+    resave: false,
+    saveUninitialized: true,
+    store: new sequelizeStore({
+        db: sequelize,
+        checkExpirationInterval: 1000 * 60 * 10,
+        expiration: 1000 * 60 * 10
+    })
+}
+
+const app = express()
+const PORT = process.env.PORT || 3001
+
+app.engine('handlebars', hbs.engine)
+app.set('view engine', 'handlebars')
+
+app.use(session(sess))
+app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.json())
+app.use(express.urlencoded({
+    extended: true
+}))
+app.use(routes)
+
+sequelize.sync()
+
+app.listen(PORT, () => {
+    console.log('Listening on port ${PORT}')
+})

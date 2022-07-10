@@ -1,4 +1,3 @@
-const { privateEncrypt } = require('crypto')
 const sequelize = require('sequelize')
 require('dotenv').config()
 
